@@ -1,0 +1,2 @@
+# reload screen cnfig without exiting a screen session
+Ctrl-a : source ~/.screenrc
