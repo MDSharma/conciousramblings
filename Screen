@@ -1,2 +1,13 @@
 # reload screen config without exiting a screen session
 Ctrl-a : source ~/.screenrc
+
+# Stack Exchange: https://serverfault.com/questions/194597/how-to-reload-screenrc-without-restarting-screen
+ if you are When using a frontend for screen (e.g. https://www.byobu.org/), a bit of extra work is needed:
+
+    Open a new terminal
+    Attach the screen: screen -x
+    Run Ctrl-a : source ~/.screenrc
+    Detach the screen: Ctrl-a d
+    Stop the new terminal: exit
+
+The settings would now be applied everywhere the above screen is attached, no matter what frontend you are using. (Even when using no frontend at all)
