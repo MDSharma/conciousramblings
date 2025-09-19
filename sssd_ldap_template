@@ -1,0 +1,32 @@
+[sssd]
+config_file_version = 2
+services = nss, pam
+domains = default
+
+[nss]
+
+[pam]
+offline_credentials_expiration = 60
+
+[domain/default]
+default_shell = /bin/bash
+ldap_id_use_start_tls = True
+cache_credentials = True
+ldap_tls_reqcert = demand
+
+id_provider = ldap
+auth_provider = ldap
+chpass_provider = ldap
+access_provider = ldap
+sudo_provider  = ldap
+
+ldap_uri = ldap://ldap.MYFQDN
+ldap_backup_uri = ldap://ldap-master.MYFQDN
+ldap_search_base = MYDOMAIN
+ldap_user_search_base = ou=people,MYDOMAIN?subtree?
+ldap_group_search_base = ou=nis,ou=groups,MYDOMAIN?subtree?
+ldap_netgroup_search_base = ou=netgroup,ou=groups,MYDOMAIN?onelevel?
+ldap_sudo_search_base = ou=netgroup,ou=groups,MYDOMAIN?onelevel?
+ldap_access_filter = uid=*
+dyndns_update = False
+use_fully_qualified_names = False
