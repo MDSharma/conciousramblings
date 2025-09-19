@@ -25,8 +25,6 @@ ldap_backup_uri = ldap://ldap-master.MYFQDN
 ldap_search_base = MYDOMAIN
 ldap_user_search_base = ou=people,MYDOMAIN?subtree?
 ldap_group_search_base = ou=nis,ou=groups,MYDOMAIN?subtree?
-ldap_netgroup_search_base = ou=netgroup,ou=groups,MYDOMAIN?onelevel?
-ldap_sudo_search_base = ou=netgroup,ou=groups,MYDOMAIN?onelevel?
 ldap_access_filter = uid=*
 dyndns_update = False
 use_fully_qualified_names = False
