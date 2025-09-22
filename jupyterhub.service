@@ -1,0 +1,12 @@
+[Unit]
+Description=JupyterHub
+After=network.target
+
+[Service]
+User=root
+Environment="PATH=/opt/miniforge3/envs/teach/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/opt/miniforge3/envs/teach/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
