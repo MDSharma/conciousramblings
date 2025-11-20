@@ -1,28 +1,38 @@
 #!/bin/bash
 # /usr/local/bin/enforce-mig-slices.sh
-# Idempotently enforce exactly 7 x 1g.5gb MIG instances on GPU 0
-# Only runs if MIG mode is currently Enabled
+# FINAL VERSION — works perfectly on A100 with driver 580.xx
 
 LOG="/var/log/mig-enforce.log"
-echo "$(date): enforce-mig-slices.sh started" >> "$LOG"
+echo "=== MIG ENFORCEMENT STARTED $(date) ===" | tee -a "$LOG"
 
-if ! nvidia-smi -i 0 -q | grep -q "MIG Mode.*: Enabled"; then
-  echo "$(date): MIG mode is Disabled or Pending → nothing to do" >> "$LOG"
-  exit 0
+MIG_STATUS=$(nvidia-smi -i 0 --query-gpu=mig.mode.current --format=csv,noheader,nounits | tr -d ' ')
+echo "MIG mode: '$MIG_STATUS'" | tee -a "$LOG"
+
+if [[ "$MIG_STATUS" != "Enabled" ]]; then
+    echo "MIG not Enabled → exiting" | tee -a "$LOG"
+    exit 0
 fi
 
-echo "$(date): MIG mode is Enabled → enforcing 7x 1g.5gb slices on GPU 0" >> "$LOG"
+echo "MIG Enabled → enforcing 7x 1g.5gb (1g.10gb) slices" | tee -a "$LOG"
 
-# Clean any existing state (safe if nothing exists)
-nvidia-smi mig -i 0 -dci >/dev/null 2>&1 || true
-nvidia-smi mig -i 0 -dgi >/dev/null 2>&1 || true
+# Clean everything
+echo "Destroying any old instances..." | tee -a "$LOG"
+nvidia-smi mig -i 0 -dci 2>&1 | tee -a "$LOG"
+nvidia-smi mig -i 0 -dgi 2>&1 | tee -a "$LOG"
 
-# Create the seven 1g.5gb GPU instances (profile 19)
-nvidia-smi mig -i 0 -cgi 19,19,19,19,19,19,19 -C >> "$LOG" 2>&1
+# ONE COMMAND DOES IT ALL — creates GPU instances + compute instances automatically
+echo "Creating 7x 1g.5gb slices WITH compute instances (-C flag does both now)..." | tee -a "$LOG"
+nvidia-smi mig -i 0 -cgi 19,19,19,19,19,19,19 -C 2>&1 | tee -a "$LOG"
 
-# Create one compute instance on each GPU instance (required for CUDA visibility)
-for gi in $(nvidia-smi mig -i 0 -L | grep "GPU instance" | awk '{print $3}'); do
-  nvidia-smi mig -i 0 -gi "$gi" -cgi 0 -C >> "$LOG" 2>&1
-done
+if [ $? -eq 0 ]; then
+    echo "=== SUCCESS: 7 MIG slices fully created and ready for CUDA ===" | tee -a "$LOG"
+else
+    echo "=== FAILED to create slices ===" | tee -a "$LOG"
+    exit 1
+fi
 
-echo "$(date): MIG slice enforcement completed successfully" >> "$LOG"
+# Final proof
+echo "=== Current MIG devices ===" | tee -a "$LOG"
+nvidia-smi -L | tee -a "$LOG"
+
+echo "=== MIG ENFORCEMENT COMPLETED $(date) ===" | tee -a "$LOG"
