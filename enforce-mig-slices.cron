@@ -1,0 +1,2 @@
+# Enforce MIG slices at every boot if MIG mode is enabled
+@reboot root /usr/local/bin/enforce-mig-slices.sh
